@@ -1,5 +1,5 @@
-# Configuration: SQLite for config/logs + Weaviate for vector store
-# Usage: helm install bifrost ./bifrost -f values-examples/sqlite-weaviate.yaml
+# Configuration: SQLite for config/logs + Qdrant for vector store
+# Usage: helm install bifrost ./bifrost -f values-examples/sqlite-qdrant.yaml
 
 # Storage configuration
 storage:
@@ -16,13 +16,12 @@ storage:
 postgresql:
   enabled: false
 
-# Deploy Weaviate for vector store
+# Deploy Qdrant for vector store
 vectorStore:
   enabled: true
-  type: weaviate
-  weaviate:
+  type: qdrant
+  qdrant:
     enabled: true
-    replicas: 1
     persistence:
       enabled: true
       size: 10Gi
@@ -40,7 +39,7 @@ bifrost:
     enableLogging: true
   providers: {}
     # Add your provider keys here
-  
+
   # Enable semantic cache plugin to use vector store
   plugins:
     semanticCache:
@@ -57,4 +56,3 @@ bifrost:
         dimension: 1536
         threshold: 0.8
         ttl: "5m"
-

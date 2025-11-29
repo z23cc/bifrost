@@ -1,51 +1,58 @@
-# Configuration: SQLite for config/logs + Redis for vector store
-# Usage: helm install bifrost ./bifrost -f values-examples/sqlite-redis.yaml
+# Configuration: PostgreSQL for config/logs + Qdrant for vector store
+# Usage: helm install bifrost ./bifrost -f values-examples/postgres-qdrant.yaml
 #
 # SECURITY NOTE: This example contains placeholder values that MUST be replaced
 # before deployment. Specifically:
-# - Redis password must be set to a strong, randomly generated value
+# - PostgreSQL password must be set to a strong, randomly generated value
 # - Provider API keys must be replaced with real keys
 # See inline comments for specific requirements.
 
 # Storage configuration
 storage:
-  mode: sqlite
-  persistence:
-    enabled: true
-    size: 10Gi
+  mode: postgres
   configStore:
     enabled: true
   logsStore:
     enabled: true
 
-# No PostgreSQL
+# PostgreSQL configuration
 postgresql:
-  enabled: false
+  enabled: true
+  auth:
+    username: bifrost
+    # REQUIRED: Replace with a strong, randomly generated password
+    # Example: Use `openssl rand -base64 32` to generate a secure password
+    # Or set via Helm: --set postgresql.auth.password="$(openssl rand -base64 32)"
+    password: "REPLACE_ME_WITH_STRONG_PASSWORD"
+    database: bifrost
+  primary:
+    persistence:
+      enabled: true
+      size: 20Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
-# Deploy Redis for vector store
+# Deploy Qdrant for vector store
 vectorStore:
   enabled: true
-  type: redis
-  redis:
+  type: qdrant
+  qdrant:
     enabled: true
-    auth:
+    persistence:
       enabled: true
-      # REQUIRED: Replace with a strong, randomly generated password
-      # Example: Use `openssl rand -base64 32` to generate a secure password
-      # Or set via Helm: --set vectorStore.redis.auth.password="$(openssl rand -base64 32)"
-      # Or use a Kubernetes secret: --set vectorStore.redis.auth.existingSecret=redis-secret
-      password: "REPLACE_ME_WITH_STRONG_PASSWORD"
-    master:
-      persistence:
-        enabled: true
-        size: 8Gi
-      resources:
-        limits:
-          cpu: 500m
-          memory: 512Mi
-        requests:
-          cpu: 250m
-          memory: 256Mi
+      size: 10Gi
+    resources:
+      limits:
+        cpu: 1000m
+        memory: 2Gi
+      requests:
+        cpu: 500m
+        memory: 1Gi
 
 # Bifrost configuration
 bifrost:
@@ -53,8 +60,8 @@ bifrost:
     enableLogging: true
   providers: {}
     # Add your provider keys here
-  
-  # Enable semantic cache plugin to use Redis vector store
+
+  # Enable semantic cache plugin to use Qdrant vector store
   plugins:
     semanticCache:
       enabled: true
@@ -73,4 +80,3 @@ bifrost:
         dimension: 1536
         threshold: 0.8
         ttl: "5m"
-
